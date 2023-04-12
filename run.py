@@ -7,5 +7,5 @@ app = create_app()
 #     return app
 
 if __name__ == "__main__":
-    app.run(debug=1)
+    app.run(use_debugger=False, use_reloader=False, passthrough_errors=True)
 
