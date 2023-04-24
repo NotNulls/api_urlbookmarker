@@ -1,16 +1,17 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import string
 import random
-from app import db
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=True, nullable=False)
-    created = db.Column(db.DateTime, defautl=datetime.now())
-    updated = db.Column(db.DateTime, defautl=datetime.now())
+    created = db.Column(db.DateTime, default=datetime.now())
+    updated = db.Column(db.DateTime, default=datetime.now())
     bookmarks = db.relationship('Bookmark', backref="user")
     
 
@@ -24,8 +25,8 @@ class Bookmark(db.Model):
     short_url = db.Column(db.String(3), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     visits = db.Column(db.Integer, default=0)
-    created = db.Column(db.DateTime, defautl=datetime.now())
-    updated = db.Column(db.DateTime, defautl=datetime.now())
+    created = db.Column(db.DateTime, default=datetime.now())
+    updated = db.Column(db.DateTime, default=datetime.now())
 
     def generate_short_characters(self):
         characters = string.digints+string.ascii_letters
