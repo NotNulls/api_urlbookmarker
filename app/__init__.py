@@ -10,10 +10,6 @@ from app.models import login
 migrate = Migrate()
 
 
-
-
-
-
 def create_app(config_class=Config, test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(Config)
@@ -22,7 +18,7 @@ def create_app(config_class=Config, test_config=None):
     from app.models import db
     
     db.init_app(app)
-    migrate.init_app(app, db)
+    migrate.init_app(app, db, render_as_batch=True)
     login.init_app(app)
 
     JWTManager(app)

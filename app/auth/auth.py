@@ -5,6 +5,7 @@ import validators
 from app.models import User, db
 from app.auth import auth
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
+from flask_login import login_user
 
 
 @auth.route('/register', methods=["POST","GET"])
@@ -47,6 +48,7 @@ def login():
     password = request.json.get('password', "")
 
     user = User.query.filter_by(email=email).first()
+    login_user(user=user)
 
     if user:
         is_passwrod_correct = check_password_hash(user.password, password)

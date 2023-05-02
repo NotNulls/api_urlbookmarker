@@ -11,6 +11,8 @@ login.login_view= 'auth.login'
 login.login_message = ('Please login to access this page.')
 
 class User(db.Model, UserMixin):
+    __tablename__ = "user"
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -26,10 +28,15 @@ class User(db.Model, UserMixin):
     def load_user(id):
         return User.query.get(int(id))
     
-class Bookmark(db.Model):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+    
+class Bookmark(db.Model, UserMixin):
+
+    __tablename__ = "bookmark"
     id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.Text, nullable=False, unique=True)
-    url = db.Column(db.Text, nullable=False, unique=True)
+    body = db.Column(db.Text, nullable=False)
+    url = db.Column(db.Text, nullable=False)
     short_url = db.Column(db.String(3), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     visits = db.Column(db.Integer, default=0)
@@ -37,8 +44,8 @@ class Bookmark(db.Model):
     updated = db.Column(db.DateTime, default=datetime.now())
 
     def generate_short_characters(self):
-        characters = string.digints+string.ascii_letters
-        pick_chars = ''.join(random.choice(characters,k=3))
+        characters = string.digits+string.ascii_letters
+        pick_chars = ''.join(random.choices(characters,k=3))
 
         link = self.query.filter_by(short_url=pick_chars).first()
 
@@ -47,10 +54,10 @@ class Bookmark(db.Model):
         else:
             return pick_chars
  
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
 
-        self.short_url = self.genetate_short_characters()
+        self.short_url = self.generate_short_characters()
 
     def __repr__(self):
         return f'BOOKMARK:  {self.url}'

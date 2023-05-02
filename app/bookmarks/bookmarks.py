@@ -1,43 +1,65 @@
 from app.bookmarks import bookmarks
 from flask import request
-from validators import url
+import validators
 from app.constants.http_status_codes import *
 from app.models import Bookmark, db
-from flask import json, jsonify
-from flask_login import current_user
+from flask import jsonify
+from flask_login import current_user, login_required
+from flask_jwt_extended import jwt_required
 
-@bookmarks.route('/')
+@bookmarks.route('/register')
 def register():
     return "Success"
 
 @bookmarks.route('/',methods=['POST','GET'])
+@jwt_required()
+@login_required
 def handle_bookmark():
-    if request.method == 'POST':
-        body = request.get_json('body','')
-        url = request.get_json('url','')
+    if current_user.is_authenticated:    
+        if request.method == 'POST':
+            
+            body = request.get_json().get('body', '')
+            url = request.get_json().get('url', '')
 
-    if not url(url):
-        return ({
+            if not validators.url(url):
+                return ({
+                    "error":"Enter a valid URL."
+                }), HTTP_400_BAD_REQUEST
+            
+            if Bookmark.query.filter_by(url=url).first():
+                return jsonify({
+                    "error":"The URL already exists."
+                })
 
-            "error":"Enter a valid URL."
-        }), HTTP_400_BAD_REQUEST
-    
-    if Bookmark.query.filter_by(url=url):
-        return json({
-            "error":"The URL already exists."
-        })
+            bookmark = Bookmark(body=body, url=url, user_id=current_user.id,)
+            db.session.add(bookmark)
+            db.session.commit()
 
-    bookmark = Bookmark(url=url, body=body, user_id=current_user.id)
-    db.session.add(bookmark)
-    db.session.commit()
+            return jsonify({
+                'user': {
+                    'id':bookmark.id,
+                    'url':bookmark.url,
+                    'short_url':bookmark.short_url,
+                    'visits':bookmark.visits,
+                    'created_at':bookmark.created,
+                    'updated_at':bookmark.created,
+                }
+            }), HTTP_200_OK
 
-    return jsonify({
-        'user': {
-            'id':bookmark.id,
-            'url':bookmark.url,
-            'short_url':bookmark.short_url,
-            'visits':bookmark.visits,
-            'created_at':bookmark.created,
-            'updated_at':bookmark.created,
-        }
-    }), HTTP_200_OK
+        else:
+            bookmks= Bookmark.query.filter_by(user_id=current_user.id)
+
+            data=[]
+
+            for bkmk in bookmks:
+                data.append({
+                    'id':bookmark.id,
+                    'url':bookmark.url,
+                    'short_url':bookmark.short_url,
+                    'visits':bookmark.visits,
+                    'created_at':bookmark.created,
+                    'updated_at':bookmark.created,
+                })
+
+            return jsonify({'data':data})
+        
