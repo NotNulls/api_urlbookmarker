@@ -47,12 +47,46 @@ def handle_bookmark():
             }), HTTP_200_OK
 
         else:
-            bookmks= Bookmark.query.filter_by(user_id=current_user.id)
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', 5, type=int)
+
+            bookmks= Bookmark.query.filter_by(user_id=current_user.id).paginate(page=page, per_page=per_page)
 
             data=[]
 
-            for bkmk in bookmks:
+            for bkmk in bookmks.items:
                 data.append({
+                    'id':bkmk.id,
+                    'url':bkmk.url,
+                    'short_url':bkmk.short_url,
+                    'visits':bkmk.visits,
+                    'created_at':bkmk.created,
+                    'updated_at':bkmk.created,
+                })
+
+            meta = {
+                "page":bookmks.pages,
+                "pages":bookmks.pages,
+                "total_""pages":bookmks.total,
+                "prev_page":bookmks.prev_num,
+                "next_page":bookmks.next_num,
+                "has_next":bookmks.has_next,
+                "has_prev":bookmks.has_prev,
+            }
+
+    return jsonify({'data':data, "meta":meta})
+
+@bookmarks.route("/<int:id>")
+@jwt_required()
+def get_bookmark(id):
+    if current_user.is_authenticated:
+
+        bookmark = Bookmark.query.filter_by(user_id=current_user.id, id=id).first()
+
+        if not bookmark:
+            return jsonify({"message":"Item not found"}), HTTP_404_NOT_FOUND
+        
+    return jsonify({
                     'id':bookmark.id,
                     'url':bookmark.url,
                     'short_url':bookmark.short_url,
@@ -60,6 +94,4 @@ def handle_bookmark():
                     'created_at':bookmark.created,
                     'updated_at':bookmark.created,
                 })
-
-            return jsonify({'data':data})
-        
+            

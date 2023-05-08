@@ -19,7 +19,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(80), unique=True, nullable=False)
     created = db.Column(db.DateTime, default=datetime.now())
     updated = db.Column(db.DateTime, default=datetime.now())
-    bookmarks = db.relationship('Bookmark', backref="user")
+    bookmarks = db.relationship('Bookmark', backref="user", lazy="dynamic")
     
     def __repr__(self):
         return f'USER:  {self.username}'
