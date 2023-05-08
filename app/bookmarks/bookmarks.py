@@ -91,7 +91,61 @@ def get_bookmark(id):
                     'url':bookmark.url,
                     'short_url':bookmark.short_url,
                     'visits':bookmark.visits,
+                    'body':bookmark.body,
                     'created_at':bookmark.created,
                     'updated_at':bookmark.created,
                 })
             
+
+@bookmarks.put('/<int:id>')
+@bookmarks.patch('/<int:id>')
+@login_required
+@jwt_required()
+def edit_bookmark(id):
+    if current_user.is_authenticated:
+
+        bookmark = Bookmark.query.filter_by(user_id=current_user.id, id=id).first()
+        
+        if not bookmark:
+            return jsonify({"message":"Item not found"}), HTTP_404_NOT_FOUND
+        
+        body = request.get_json().get('body', '')
+        url = request.get_json().get('url', '')
+
+        if not validators.url(url):
+                return ({
+                    "error":"Enter a valid URL."
+                }), HTTP_400_BAD_REQUEST
+        
+        bookmark.url = url
+        bookmark.body = body
+
+        db.session.commit()
+
+        return jsonify({'user': {
+                    'id':bookmark.id,
+                    'url':bookmark.url,
+                    'short_url':bookmark.short_url,
+                    'visits':bookmark.visits,
+                    'body':bookmark.body,
+                    'created_at':bookmark.created,
+                    'updated_at':bookmark.created,
+                }}),HTTP_200_OK
+    
+@bookmarks.route('/<int:id>', methods = ["DELETE"])
+@jwt_required()
+def delete(id):
+    if current_user.is_authenticated:
+        if request.method == "DELETE":
+
+            bookmark = Bookmark.query.filter_by(user_id=current_user.id, id=id).first()
+
+            if not bookmark:
+                return ({
+                    "error":"Enter a valid URL."
+                }), HTTP_400_BAD_REQUEST
+            
+            db.session.delete(bookmark)
+            db.session.commit()
+
+            return jsonify({}), HTTP_204_NO_CONTENT
