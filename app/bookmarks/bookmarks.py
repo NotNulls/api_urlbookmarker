@@ -1,5 +1,5 @@
 from app.bookmarks import bookmarks
-from flask import request
+from flask import request, redirect
 import validators
 from app.constants.http_status_codes import *
 from app.models import Bookmark, db
@@ -95,7 +95,17 @@ def get_bookmark(id):
                     'created_at':bookmark.created,
                     'updated_at':bookmark.created,
                 })
-            
+
+@bookmarks.route("/<short_url>")
+def redirect_to_url(shor_url):
+    
+    bookmark = Bookmark.qurey.filter_by(shor_url=shor_url).first_or_404()
+
+    if bookmark:
+        bookmark.visits = bookmark.visits+1
+        db.session.commit()
+
+        return redirect(bookmark.url)
 
 @bookmarks.put('/<int:id>')
 @bookmarks.patch('/<int:id>')
