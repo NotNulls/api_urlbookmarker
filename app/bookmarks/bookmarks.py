@@ -97,9 +97,9 @@ def get_bookmark(id):
                 })
 
 @bookmarks.route("/<short_url>")
-def redirect_to_url(shor_url):
+def redirect_to_url(short_url):
     
-    bookmark = Bookmark.qurey.filter_by(shor_url=shor_url).first_or_404()
+    bookmark = Bookmark.query.filter_by(short_url=short_url).first_or_404()
 
     if bookmark:
         bookmark.visits = bookmark.visits+1
