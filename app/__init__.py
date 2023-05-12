@@ -18,7 +18,6 @@ def create_app(config_class=Config, test_config=None):
     from app.errors import handlers
 
 
-
     db.init_app(app)
     migrate.init_app(app, db, render_as_batch=True)
     login.init_app(app)
@@ -28,5 +27,6 @@ def create_app(config_class=Config, test_config=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(bookmarks_bp)
     app.register_blueprint(errors_bp, handlers=handlers)
+    
 
     return app

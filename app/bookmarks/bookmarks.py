@@ -159,3 +159,22 @@ def delete(id):
             db.session.commit()
 
             return jsonify({}), HTTP_204_NO_CONTENT
+        
+@bookmarks.get("/stats")
+def get_stats():
+    data = []
+
+    if current_user.is_authenticated:
+        items = Bookmark.query.filter_by(user_id=current_user.id).all()
+
+        for item in items:
+            new_link = {
+                "visits":item.visits,
+                "url":item.url,
+                "id":item.id,
+                "short_url":item.short_url,
+            }
+
+        data.append(new_link)
+
+        return jsonify({"data":data}), HTTP_200_OK
